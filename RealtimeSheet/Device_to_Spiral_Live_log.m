@@ -21,7 +21,7 @@ set(gca,'rticklabel',[])
 hold on
 for i = 1:N
     ho(i) = polarplot(theta(i), log_R(i), 'ro', 'MarkerFaceColor', [1 .6 .6], 'MarkerSize', 10);
-    hl(i) = polarplot([theta(i) theta(i)], [min(log_R) log_R(i)], 'r-'); %..
+    hl(i) = polarplot([theta(i) theta(i)], [min(log_R) log_R(i)], 'r-', 'LineWidth',1); %..
     ho(i).Visible = 'off';
     hl(i).Visible = 'off';
 end
@@ -36,26 +36,38 @@ mididevinfo
 device = mididevice(0)
 while 1
     msgArray = midireceive(device);
-    % midi signal check
+    % -- midi signal check
     % if length(msgArray)>0
-    %     msgArray
+    %      msgArray
     % end
+    
     on_no = msgArray([msgArray.Type] == 1);
     on_note = [on_no.Note];
+    on_velocity = sqrt([on_no.Velocity]+0.01)*3;
+    
+
     if off_note_exp
         off_note = [msgArray([msgArray.Type] == 2).Note];
     else
         off_note = [on_no([on_no.Velocity] == 0).Note];
     end
+    
     plot_note = horzcat(plot_note, on_note);
     if ~isempty(plot_note)
-        set(ho(plot_note - midi_note_i),'visible','on');
-        set(hl(plot_note - midi_note_i),'visible','on');
+        %set(ho(plot_note - midi_note_i), {'MarkerSize'},{plot_note});
+        n = length(on_note);
+        for i=1:n
+          set(hl(plot_note - midi_note_i),'visible','on');
+          set(ho(plot_note - midi_note_i),'MarkerSize', on_velocity(i));
+          set(ho(plot_note - midi_note_i),'visible','on');          
+        end
     end
+    
     for i = 1:length(off_note)
         off_index = (plot_note == off_note(i));
-        set(ho(plot_note(off_index)-midi_note_i),'visible','off');
+        
         set(hl(plot_note(off_index)-midi_note_i),'visible','off');
+        set(ho(plot_note(off_index)-midi_note_i),'visible','off');
         plot_note(off_index) = [];
     end
     drawnow;
