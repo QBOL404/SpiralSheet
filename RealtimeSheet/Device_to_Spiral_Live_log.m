@@ -43,7 +43,8 @@ while 1
     
     on_no = msgArray([msgArray.Type] == 1);
     on_note = [on_no.Note];
-    on_velocity = sqrt([on_no.Velocity]+0.01)*3;
+    %on_velocity = sqrt([on_no.Velocity]+0.01)*3;
+    on_velocity = ([on_no.Velocity]+1)/3;
     
 
     if off_note_exp
@@ -57,17 +58,15 @@ while 1
         %set(ho(plot_note - midi_note_i), {'MarkerSize'},{plot_note});
         n = length(on_note);
         for i=1:n
-          set(hl(plot_note - midi_note_i),'visible','on');
           set(ho(plot_note - midi_note_i),'MarkerSize', on_velocity(i));
-          set(ho(plot_note - midi_note_i),'visible','on');          
+          set([hl(plot_note - midi_note_i) ho(plot_note - midi_note_i)] ,'visible','on');       
         end
     end
     
     for i = 1:length(off_note)
         off_index = (plot_note == off_note(i));
         
-        set(hl(plot_note(off_index)-midi_note_i),'visible','off');
-        set(ho(plot_note(off_index)-midi_note_i),'visible','off');
+        set([hl(plot_note(off_index)-midi_note_i) ho(plot_note(off_index)-midi_note_i)],'visible','off');
         plot_note(off_index) = [];
     end
     drawnow;
