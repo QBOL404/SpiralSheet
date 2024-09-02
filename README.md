@@ -17,7 +17,7 @@ os
 pygame
 
 to make .exe: 
->> pyinstaller -w cont_spiral.py
+> pyinstaller -w cont_spiral.py
 
 to use:
 .mp3 .wav 있는 폴더 선택
