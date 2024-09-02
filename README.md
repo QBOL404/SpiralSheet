@@ -31,8 +31,8 @@ to use:
 midi input Device를 통해 실시간으로 음표를 입력 받아서 출력할 수 있음
 
 ### 3D Spiral Code
-`MIDIToSpiral5.mlx`
-`Midi_to_Spiral_video.mlx` (Advanced)
+`MIDIToSpiral5.mlx` <br> 
+`Midi_to_Spiral_video.mlx` (Advanced) <br> 
 `VideoAudioConcat.ipynb` 오디오와 영상을 합치기 위한 파이썬 코드 
 
 ### QBOL 3D Spiral Score WIKI
