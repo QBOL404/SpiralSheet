@@ -9,7 +9,7 @@ log_R = log2(A); % 추가
 midi_note_i = 20;
 % parted spiral line
 P = 2;
-f_P = f_i*r.^(-32+note_i:1/P:N-2);
+f_P = f_i*r.^(-32+note_i:1/P:N-2); 
 theta_P = pi/2 - 2*pi*log2(f_P/f_i);
 log_R_P = log2(1./f_P); % 수정
 %l = polarplot(theta, A,'bo');
