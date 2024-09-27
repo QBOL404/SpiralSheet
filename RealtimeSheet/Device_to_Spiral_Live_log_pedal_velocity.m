@@ -90,12 +90,15 @@ while 1
     if off_note_exp
         note_list([msgArray([msgArray.Type] == 2).Note]) = 0;
     else
-        if length(msgArray([msgArray.Type] == 1))>0
-            msgArray([msgArray.Type] == 1);
-        end
-        % ControlChange 부분을 필터링 하기 위해 필터링 추가함.
-        % 코드가 갈수록 보기 어려워져서 읽기 쉽게 정리해야 할 것 같음.
-        note_list([msgArray([msgArray([msgArray([msgArray.Type] == 1).Velocity] == 0).Type] == 1).Note]) = 0;
+        % -- 리스트 확인 코드 
+        % if length(msgArray([msgArray.Type] == 1))>0
+        %     msgArray([msgArray.Type] == 1);
+        % end
+        % -- 
+
+        % CC 신호와 아예 분리로 수정. 
+        on_note_list = msgArray([msgArray.Type] == 1); % CC
+        note_list([on_note_list([on_note_list.Velocity] == 0).Note]) = 0;
         %note_list([msgArray([msgArray([msgArray.Type] == 1).Velocity] == 0).Note]) = 0;
     end
     
