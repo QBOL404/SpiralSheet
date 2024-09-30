@@ -27,7 +27,7 @@ A_P = 1./f_P;
 
 log_R = log2(A); % 추가
 log_R_P = log2(1./f_P); % 추가
-midi_note_i = 20;
+midi_note_i = 20; % -- 이렇게 해버리면 index가 남긴 한데 
 
 %l = polarplot(theta, A,'bo');
 %s = polarplot(theta_P, A_P,'b-');
@@ -45,7 +45,7 @@ hold on
 
 for i=1:N
     ho(i)=polarplot(theta_P(i),log_R_P(i),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-    hl(i)=polarplot([theta_P(i) theta_P(i)],[min_R log_R_P(i)],'r-');
+    hl(i)=polarplot([theta_P(i) theta_P(i)],[min_R log_R_P(i)],'r-', LineWidth=1.5);
     ho(i).Visible = 'off';
     hl(i).Visible = 'off';
     % hold on
@@ -65,30 +65,35 @@ pedal_signal = false;
 while 1
     msgArray = midireceive(device);
 
-    note_list([msgArray([msgArray.Type] == 1).Note]) = 1;
-    CCsignal = msgArray([msgArray.Type] == 12);
+    note_list([msgArray([msgArray.Type] == 1).Note]-midi_note_i) = 1;
+    CC_signal = msgArray([msgArray.Type] == 12);
+    note_signal = msgArray([msgArray.Type] == 1); % CC 신호와 아예 분리로 수정. > 속도면에서 단점이 있으면 
 
-    if length(CCsignal)==1 % 에러 방지를 막고자, 길이가 1일때만 취급. 
+    % -- pedal catch
+    if length(CC_signal)==1 % 에러 방지를 막고자, 길이가 1일때만 취급. 
         % CCsignal
-        if CCsignal.CCNumber == 64 & CCsignal.CCValue > 0
+        if CC_signal.CCNumber == 64 & CC_signal.CCValue > 0
             "pedal on"
             pedal_signal = true;
         end
 
-        if CCsignal.CCNumber == 64 & CCsignal.CCValue == 0
+        if CC_signal.CCNumber == 64 & CC_signal.CCValue == 0
             "pedal off"
             pedal_signal = false;
         end
     end
     
+    % -- velocity control
     if pedal_signal == false
-        note_vel([msgArray([msgArray.Type] == 1).Note]) = [msgArray([msgArray.Type] == 1).Velocity];
+        %note_vel([msgArray([msgArray.Type] == 1).Note]) = [msgArray([msgArray.Type] == 1).Velocity];
+        note_vel([note_signal.Note]-midi_note_i) = [note_signal.Velocity];
     else
-        note_vel([msgArray([msgArray([msgArray([msgArray.Type] == 1).Velocity] ~= 0).Type] == 1).Note]) = [msgArray([msgArray([msgArray([msgArray.Type] == 1).Velocity] ~= 0).Type] == 1).Velocity];
+        %note_vel([msgArray([msgArray([msgArray([msgArray.Type] == 1).Velocity] ~= 0).Type] == 1).Note]) = [msgArray([msgArray([msgArray([msgArray.Type] == 1).Velocity] ~= 0).Type] == 1).Velocity];
+        note_vel([note_signal([note_signal.Velocity]~=0).Note]-midi_note_i) = [note_signal([note_signal.Velocity] ~= 0).Velocity];
     end
 
     if off_note_exp
-        note_list([msgArray([msgArray.Type] == 2).Note]) = 0;
+        note_list([msgArray([msgArray.Type] == 2).Note]-midi_note_i) = 0; % -- 에러 발생 가능 코드 
     else
         % -- 리스트 확인 코드 
         % if length(msgArray([msgArray.Type] == 1))>0
@@ -96,9 +101,7 @@ while 1
         % end
         % -- 
 
-        % CC 신호와 아예 분리로 수정. 
-        on_note_list = msgArray([msgArray.Type] == 1); % CC
-        note_list([on_note_list([on_note_list.Velocity] == 0).Note]) = 0;
+        note_list([note_signal([note_signal.Velocity] == 0).Note]-midi_note_i) = 0;
         %note_list([msgArray([msgArray([msgArray.Type] == 1).Velocity] == 0).Note]) = 0;
     end
     
@@ -106,8 +109,8 @@ while 1
     vel = num2cell(note_vel);
     [ho.MarkerSize] = vel{:};
     
-    set(ho(note_list == 1),'visible','on');
-    set(hl(note_list == 1),'visible','on');
+    set(ho(note_list==1),'visible','on');
+    set(hl(note_list==1),'visible','on');
     
     if pedal_signal == true
         
