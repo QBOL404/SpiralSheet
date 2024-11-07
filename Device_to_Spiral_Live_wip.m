@@ -12,6 +12,11 @@ gui_fig = uifigure;
 
 update = uibutton(gui_fig, "state", "Text", "Update", "Position", [340 10 100 50]);
 
+north_note = uidropdown(gui_fig);
+north_note.Items = ["C","B","A#","A","G#","G","F#","F","E","D#","D","C#"];
+north_note.Position = [10 180 80 30];
+north_note.Value = "A";
+
 octave_slide = uislider(gui_fig, "range", "Position", [20, 300, 200, 3], "Limits", [0, 8]);
 octave_slide.MajorTicks = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 octave_slide.MinorTicks = [];
@@ -72,13 +77,16 @@ s = polarplot(theta_P(n_start:n_end), log_R_P(n_start:n_end), 'b-'); % 추가
 
 R = log_R_P(1); % 추가
 
+note_label = ["C","B","A#","A","G#","G","F#","F","E","D#","D","C#","C","B","A#","A","G#","G","F#","F","E","D#","D","C#","C","B","A#","A","G#","G","F#","F","E","D#","D","C#"];
+
 %rlim([0 R])
 min_R = min(log_R_P); % 계산 속도를 위해 수정 
 rlim([min_R R]); % 추가
-set(gca,'thetaticklabel',{'C' 'B' 'A#' 'A' 'G#' 'G' 'F#' 'F' 'E' 'D#' 'D' 'C#' });
+set(gca,'thetaticklabel', note_label(1:12));
 set(gca,'rticklabel',[]);
 set(gcf,'position',[300,150,800,800]);
 hold on
+
 
 % 각 plot point 객체 생성
 for i=1:N
@@ -97,7 +105,7 @@ off note 신호가 없는 경우: true로 설정
 only_on_signal = true;
 % midi device를 device 변수에 할당.
 mididevinfo
-device = mididevice(1);
+device = mididevice(0);
 
 note_list = zeros(1, N); % index: note number, 값이 1일 경우 켜진 note / 0일 경우 꺼진 note.
 velocity_list = ones(1, N); % 각 note의 velocity 값 저장.
@@ -135,14 +143,18 @@ while 1
                 hl(i).Visible = 'off';
             end
         end
+        
+        n_n = find(strcmp(note_label, north_note.Value), 2);
+        set(gca,'thetaticklabel', note_label(n_n(2)-3:9+n_n(2)));
+
         update.Value = false;
         disp("Finish");
     end
     
     % GUI part
 
-    msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
-    %msgArray = [];
+    %msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
+    msgArray = [];
     if isempty(msgArray) % 입력이 없을 경우
         pause(0.01)
         drawnow;
