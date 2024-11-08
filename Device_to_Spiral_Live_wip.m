@@ -65,13 +65,13 @@ function [theta_P, y] = dev(N, scale)
 end
 
 % 나선악보를 그리기 위한 기초 변수 선언.
-N = 12*8;
+N = 12*8+12;
 [theta_P, log_R_P] = dev(N, 0); % type: linear=0, log=1
 midi_note_i = 20; % -- 이렇게 해버리면 index가 남긴 한데 
 % 나선악보를 그리기 위한 기초 변수 선언
 
-n_start = 1 + 12*round(octave_slide.Value(1));
-n_end = 12*round(octave_slide.Value(2));
+n_start = 1 + 12*round(octave_slide.Value(1))+12;
+n_end = 12*round(octave_slide.Value(2))+12;
 
 s = polarplot(theta_P(n_start:n_end), log_R_P(n_start:n_end), 'b-'); % 추가
 
@@ -79,9 +79,9 @@ R = log_R_P(1); % 추가
 
 note_label = ["C","B","A#","A","G#","G","F#","F","E","D#","D","C#","C","B","A#","A","G#","G","F#","F","E","D#","D","C#","C","B","A#","A","G#","G","F#","F","E","D#","D","C#"];
 
-%rlim([0 R])
 min_R = min(log_R_P); % 계산 속도를 위해 수정 
-rlim([min_R R]); % 추가
+
+rlim([min(log_R_P(n_start:end)) max(log_R_P(n_start:end))]);
 set(gca,'thetaticklabel', note_label(1:12));
 set(gca,'rticklabel',[]);
 set(gcf,'position',[300,150,800,800]);
@@ -90,8 +90,8 @@ hold on
 
 % 각 plot point 객체 생성
 for i=1:N
-    ho(i)=polarplot(theta_P(i),log_R_P(i),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-    hl(i)=polarplot([theta_P(i) theta_P(i)],[min_R log_R_P(i)],'r-', LineWidth=1.5);
+    ho(i)=polarplot(theta_P(i+12),log_R_P(i+12),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+    hl(i)=polarplot([theta_P(i+12) theta_P(i+12)],[min_R log_R_P(i+12)],'r-', LineWidth=1.5);
     ho(i).Visible = 'off';
     hl(i).Visible = 'off';
 end
@@ -102,10 +102,10 @@ note_on 신호의 velocity가 0일 때 note_off를 표현함.
 off note 신호가 있는 경우: false로 설정
 off note 신호가 없는 경우: true로 설정
 %}
-only_on_signal = true;
+only_on_signal = false;
 % midi device를 device 변수에 할당.
 mididevinfo
-device = mididevice(0);
+device = mididevice(1);
 
 note_list = zeros(1, N); % index: note number, 값이 1일 경우 켜진 note / 0일 경우 꺼진 note.
 velocity_list = ones(1, N); % 각 note의 velocity 값 저장.
@@ -117,14 +117,22 @@ while 1
     if update.Value
         % WIP
         disp("Update start");
+        for i=1:N
+            ho(i).Visible = 'off';
+            hl(i).Visible = 'off';
+        end
         N = 12*8;
         [theta_P, log_R_P] = dev(N, scale_b2.Value); % type: linear=0, log=1
         midi_note_i = 20; % -- 이렇게 해버리면 index가 남긴 한데 
-        n_start = 1 + 12*round(octave_slide.Value(1));
-        n_end = 12*round(octave_slide.Value(2));
+        n_start = 1 + 12*round(octave_slide.Value(1))+12;
+        n_end = 12*round(octave_slide.Value(2))+12;
         s.XData = theta_P(n_start:n_end);
         s.YData = log_R_P(n_start:n_end);
 
+        n_n = find(strcmp(note_label, north_note.Value), 2);
+        n_n = n_n(2);
+        set(gca,'thetaticklabel', note_label(n_n-3:9+n_n));
+        n_n = n_n-16;
         if n_start < n_end
             rlim([min(log_R_P(n_start:end)) max(log_R_P(n_start:end))]);
         end
@@ -137,15 +145,12 @@ while 1
             end
         else
             for i=1:N
-                ho(i)=polarplot(theta_P(i),log_R_P(i),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(i) theta_P(i)],[min(log_R_P) log_R_P(i)],'r-', LineWidth=1.5);
+                ho(i)=polarplot(theta_P(i+12+n_n),log_R_P(i+12+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+                hl(i)=polarplot([theta_P(i+12+n_n) theta_P(i+12+n_n)],[min(log_R_P) log_R_P(i+12+n_n)],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
         end
-        
-        n_n = find(strcmp(note_label, north_note.Value), 2);
-        set(gca,'thetaticklabel', note_label(n_n(2)-3:9+n_n(2)));
 
         update.Value = false;
         disp("Finish");
@@ -153,9 +158,12 @@ while 1
     
     % GUI part
 
-    %msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
-    msgArray = [];
-    if isempty(msgArray) % 입력이 없을 경우
+    msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
+    %msgArray = [];
+    if isempty(msgArray) % 입력이 없을 경우velocity만 업데이트.
+        velocity_list = arrayfun(@update_velocity, velocity_list);
+        vel = num2cell(velocity_list);
+        [ho.MarkerSize] = vel{:};
         pause(0.01)
         drawnow;
         continue
@@ -214,7 +222,7 @@ while 1
     [ho.MarkerSize] = vel{:};
     
     % note_list의 값이 1인 index만 point와 line을 킴.
-    set(ho(note_list==1),'visible','on');
+    set(ho(note_list==1), 'MarkerFaceColor', [1 .6 .6], 'visible','on');
     set(hl(note_list==1),'visible','on');
     
     % pedal_signal이 없을 경우 note를 바로 끔, 있을 경우 시간에 따라 작어짐.
@@ -223,7 +231,8 @@ while 1
     else
         set(ho(note_list == 0),'visible','off');
     end
-    %set(ho(note_list == 0),'visible','off');
+    % 잔음 노트의 색을 파란색으로 변경.
+    set(ho(note_list == 0), 'MarkerFaceColor','blue');
     set(hl(note_list == 0),'visible','off');
 
     drawnow;
