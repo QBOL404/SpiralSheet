@@ -130,26 +130,33 @@ while 1
 
         n_n = find(strcmp(note_label, north_note.Value), 2);
         n_n = n_n(2);
-        set(gca,'thetaticklabel', note_label(n_n-3:9+n_n));
-        n_n = n_n-16;
-        
-        s.XData = theta_P(n_start+n_n:n_end+n_n);
-        s.YData = log_R_P(n_start+n_n:n_end+n_n);
-        
-        if n_start < n_end
-            rlim([min(log_R_P(n_start+n_n:n_end+n_n)) max(log_R_P(n_start+n_n:n_end+n_n))]);
-        end
+               
         if direction_b2.Value == 1
+            n_n = n_n - 7;
+            set(gca,'thetaticklabel', fliplr(note_label(n_n-1:10+n_n)));
+            if n_start < n_end
+                rlim([min(log_R_P(n_start+n_n:n_end+n_n)) max(log_R_P(n_start+n_n:n_end+n_n))]);
+            end
+            s.XData = theta_P(n_start+n_n-8:n_end+n_n-8);
+            s.YData = log_R_P(n_start+n_n-8:n_end+n_n-8);
             for i=1:N
-                ho(i)=polarplot(theta_P(N-i+8+n_n),log_R_P(N-i+8+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(i) theta_P(N-i+8+n_n)],[min(log_R_P(n_start+n_n:n_end+n_n)) log_R_P(N-i+8+n_n)],'r-', LineWidth=1.5);
+                ho(i)=polarplot(theta_P(N-i+n_n+5),log_R_P(N-i+n_n+5),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+                hl(i)=polarplot([theta_P(N-i+n_n+5) theta_P(N-i+n_n+5)],[min(log_R_P(n_start+n_n-7:n_end+n_n-7)) log_R_P(N-i+n_n+5)],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
         else
+            set(gca,'thetaticklabel', note_label(n_n-3:8+n_n));
+            if n_start < n_end
+                n_n = n_n -16;
+                rlim([min(log_R_P(n_start+n_n:n_end+n_n)) max(log_R_P(n_start+n_n:n_end+n_n))]);
+                n_n = n_n +16;
+            end
+            s.XData = theta_P(n_start+n_n-16:n_end+n_n-16);
+            s.YData = log_R_P(n_start+n_n-16:n_end+n_n-16);
             for i=1:N
-                ho(i)=polarplot(theta_P(i+12+n_n),log_R_P(i+12+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(i+12+n_n) theta_P(i+12+n_n)],[min(log_R_P(n_start+n_n:n_end+n_n)) log_R_P(i+12+n_n)],'r-', LineWidth=1.5);
+                ho(i)=polarplot(theta_P(i-4+n_n),log_R_P(i-4+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+                hl(i)=polarplot([theta_P(i-4+n_n) theta_P(i-4+n_n)],[min(log_R_P(n_start+n_n-16:n_end+n_n-16)) log_R_P(i-4+n_n)],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
