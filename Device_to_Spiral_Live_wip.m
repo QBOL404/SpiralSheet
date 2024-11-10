@@ -102,7 +102,7 @@ note_on 신호의 velocity가 0일 때 note_off를 표현함.
 off note 신호가 있는 경우: false로 설정
 off note 신호가 없는 경우: true로 설정
 %}
-only_on_signal = false;
+only_on_signal = true;
 % midi device를 device 변수에 할당.
 mididevinfo
 device = mididevice(1);
@@ -126,27 +126,30 @@ while 1
         midi_note_i = 20; % -- 이렇게 해버리면 index가 남긴 한데 
         n_start = 1 + 12*round(octave_slide.Value(1))+12;
         n_end = 12*round(octave_slide.Value(2))+12;
-        s.XData = theta_P(n_start:n_end);
-        s.YData = log_R_P(n_start:n_end);
+        
 
         n_n = find(strcmp(note_label, north_note.Value), 2);
         n_n = n_n(2);
         set(gca,'thetaticklabel', note_label(n_n-3:9+n_n));
         n_n = n_n-16;
+        
+        s.XData = theta_P(n_start+n_n:n_end+n_n);
+        s.YData = log_R_P(n_start+n_n:n_end+n_n);
+        
         if n_start < n_end
-            rlim([min(log_R_P(n_start:end)) max(log_R_P(n_start:end))]);
+            rlim([min(log_R_P(n_start+n_n:n_end+n_n)) max(log_R_P(n_start+n_n:n_end+n_n))]);
         end
         if direction_b2.Value == 1
             for i=1:N
-                ho(i)=polarplot(theta_P(N-i+1),log_R_P(N-i+1),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(i) theta_P(N-i+1)],[min(log_R_P) log_R_P(N-i+1)],'r-', LineWidth=1.5);
+                ho(i)=polarplot(theta_P(N-i+8+n_n),log_R_P(N-i+8+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+                hl(i)=polarplot([theta_P(i) theta_P(N-i+8+n_n)],[min(log_R_P(n_start+n_n:n_end+n_n)) log_R_P(N-i+8+n_n)],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
         else
             for i=1:N
                 ho(i)=polarplot(theta_P(i+12+n_n),log_R_P(i+12+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(i+12+n_n) theta_P(i+12+n_n)],[min(log_R_P) log_R_P(i+12+n_n)],'r-', LineWidth=1.5);
+                hl(i)=polarplot([theta_P(i+12+n_n) theta_P(i+12+n_n)],[min(log_R_P(n_start+n_n:n_end+n_n)) log_R_P(i+12+n_n)],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
@@ -232,7 +235,7 @@ while 1
         set(ho(note_list == 0),'visible','off');
     end
     % 잔음 노트의 색을 파란색으로 변경.
-    set(ho(note_list == 0), 'MarkerFaceColor','blue');
+    set(ho(note_list == 0), 'MarkerFaceColor',[1, .9, .9]);
     set(hl(note_list == 0),'visible','off');
 
     drawnow;
