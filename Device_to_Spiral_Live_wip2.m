@@ -130,16 +130,17 @@ while 1
         n_n = n_n(2);
                
         if direction_b2.Value == 1
-            n_n = n_n - 7;
-            set(gca,'thetaticklabel', fliplr(note_label(n_n-1:10+n_n)));
+            set(gca,'thetaticklabel', note_label(n_n-3:8+n_n));
             if n_start < n_end
+                n_n = n_n -16;
                 rlim([min(log_R_P(n_start+n_n:n_end+n_n)) max(log_R_P(n_start+n_n:n_end+n_n))]);
+                n_n = n_n +16;
             end
-            s.XData = theta_P(n_start+n_n-8:n_end+n_n-8);
-            s.YData = log_R_P(n_start+n_n-8:n_end+n_n-8);
+            s.XData = theta_P(n_start+n_n-16:n_end+n_n-16);
+            s.YData = log_R_P(n_start+n_n-16:n_end+n_n-16);
             for i=1:N
-                ho(i)=polarplot(theta_P(N-i+n_n+5),log_R_P(N-i+n_n+5),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(N-i+n_n+5) theta_P(N-i+n_n+5)],[min(log_R_P(n_start+n_n-7:n_end+n_n-7)) log_R_P(N-i+n_n+5)],'r-', LineWidth=1.5);
+                ho(i)=polarplot(theta_P(i-4+n_n),log_R_P(i-4+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+                hl(i)=polarplot([theta_P(i-4+n_n) theta_P(i-4+n_n)],[min(log_R_P(n_start+n_n-16:n_end+n_n-16)) log_R_P(i-4+n_n)],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
@@ -238,7 +239,7 @@ while 1
         set(ho(note_list == 0),'visible','off');
     end
     % 잔음 노트의 색을 파란색으로 변경.
-    set(ho(note_list == 0), 'MarkerFaceColor',[1, .9, .9]);
+    set(ho(note_list == 0), 'MarkerFaceColor',[1, .8, .8]);
     set(hl(note_list == 0),'visible','off');
 
     drawnow;
