@@ -10,24 +10,24 @@ end
 
 gui_fig = uifigure;
 
-update = uibutton(gui_fig, "state", "Text", "Update", "Position", [340 10 100 50]);
+update = uibutton(gui_fig, "state", "Text", "Update", "Position", [340 10 100 50], "FontSize", 18, "FontColor", 'r');
 
-north_note = uidropdown(gui_fig);
+north_note = uidropdown(gui_fig, "FontSize", 15);
 north_note.Items = ["C","B","A#","A","G#","G","F#","F","E","D#","D","C#"];
 north_note.Position = [10 180 80 30];
 north_note.Value = "A";
 
-octave_slide = uislider(gui_fig, "range", "Position", [20, 300, 200, 3], "Limits", [0, 8]);
+octave_slide = uislider(gui_fig, "range", "Position", [20, 300, 200, 3], "Limits", [0, 8], "FontSize", 15);
 octave_slide.MajorTicks = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 octave_slide.MinorTicks = [];
 
-direction_gui = uibuttongroup(gui_fig, "Title", 'Direction', "Position",[170 10 150 130]);
-direction_b1 = uiradiobutton(direction_gui,"Text","Top->Down","Position",[10 20 130 30]);
-direction_b2 = uiradiobutton(direction_gui,"Text","Down->Top","Position",[10 60 130 30]);
+direction_gui = uibuttongroup(gui_fig, "Title", 'Direction', "Position",[170 10 150 130], "FontSize", 15);
+direction_b1 = uiradiobutton(direction_gui,"Text","Top->Down","Position",[10 20 130 30], "FontSize", 15);
+direction_b2 = uiradiobutton(direction_gui,"Text","Down->Top","Position",[10 60 130 30], "FontSize", 15);
 
-scale_gui = uibuttongroup(gui_fig, "Title", 'Scale', "Position",[10 10 150 130]);
-scale_b1 = uiradiobutton(scale_gui,"Text","Linear","Position",[10 20 130 30]);
-scale_b2 = uiradiobutton(scale_gui,"Text","Log","Position",[10 60 130 30]);
+scale_gui = uibuttongroup(gui_fig, "Title", 'Scale', "Position",[10 10 150 130], "FontSize", 15);
+scale_b1 = uiradiobutton(scale_gui,"Text","Linear","Position",[10 20 130 30], "FontSize", 15);
+scale_b2 = uiradiobutton(scale_gui,"Text","Log","Position",[10 60 130 30], "FontSize", 15);
 % GUI part
 
 % velocity 업데이트 함수.
@@ -40,23 +40,28 @@ function vel = update_velocity(x)
 end
 
 % plot parameter 업데이트 함수.
-function [theta_P, y] = dev(N, scale)
+function [theta_P, y, l_theta_P, l_y, P] = dev(N, scale)
     r = 2^(1/12);
     
     f_i = 55; % initial freq 
     note_i = 33; % initial note
     
     % parted spiral line
-    P = 1;
+    P = 5;
     
-    f_P = f_i*r.^(-note_i+1:1/P:N-2)
+    f_P = f_i*r.^(-note_i+1:1:N-2);
     theta_P = pi/2 - 2*pi*log2(f_P/f_i);
+    
+    l_f_P = f_i*r.^(-note_i+1:1/P:N-2);
+    l_theta_P = pi/2 - 2*pi*log2(l_f_P/f_i);
 
     if scale == 0
         y = 1./f_P;
+        l_y = 1./l_f_P;
         return
     else
         y = log2(1./f_P);
+        l_y = log2(1./l_f_P);
         return
     end
 end
@@ -65,13 +70,13 @@ end
 
 % 나선악보를 그리기 위한 기초 변수 선언.
 N = 12*8+12;
-[theta_P, log_R_P] = dev(N, 0); % type: linear=0, log=1
+[theta_P, log_R_P, l_theta_P, l_log_R_P, P] = dev(N, 0); % type: linear=0, log=1
 % 나선악보를 그리기 위한 기초 변수 선언
 
 n_start = 1 + 12*round(octave_slide.Value(1))+12;
 n_end = 12*round(octave_slide.Value(2))+12;
 
-s = polarplot(theta_P(n_start:n_end), log_R_P(n_start:n_end), 'b-'); % 추가
+s = polarplot(l_theta_P(P*n_start-16:P*n_end+13-16), l_log_R_P(P*n_start-16:P*n_end+13-16), 'b-'); % 추가
 
 R = log_R_P(1); % 추가
 
@@ -120,7 +125,7 @@ while 1
             hl(i).Visible = 'off';
         end
         N = 12*8;
-        [theta_P, log_R_P] = dev(N, scale_b2.Value); % type: linear=0, log=1
+        [theta_P, log_R_P, l_theta_P, l_log_R_P, P] = dev(N, scale_b2.Value); % type: linear=0, log=1
         
         n_start = 1 + 12*round(octave_slide.Value(1))+12;
         n_end = 12*round(octave_slide.Value(2))+12;
@@ -130,29 +135,25 @@ while 1
         n_n = n_n(2);
                
         if direction_b2.Value == 1
-            set(gca,'thetaticklabel', note_label(n_n-3:8+n_n));
+            set(gca,'thetaticklabel', flip(note_label(n_n-8:3+n_n)));
             if n_start < n_end
-                n_n = n_n -16;
-                rlim([min(log_R_P(n_start+n_n:n_end+n_n)) max(log_R_P(n_start+n_n:n_end+n_n))]);
-                n_n = n_n +16;
+                rlim([min(log_R_P(n_start+n_n-16:n_end+n_n-16)) max(log_R_P(n_start+n_n-16:n_end+n_n-16))]);
             end
-            s.XData = theta_P(n_start+n_n-16:n_end+n_n-16);
-            s.YData = log_R_P(n_start+n_n-16:n_end+n_n-16);
+            s.XData = l_theta_P(P*n_start+n_n-16:P*n_end+n_n-16);
+            s.YData = l_log_R_P(P*n_start+n_n-16:P*n_end+n_n-16);
             for i=1:N
-                ho(i)=polarplot(theta_P(i-4+n_n),log_R_P(i-4+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(i-4+n_n) theta_P(i-4+n_n)],[min(log_R_P(n_start+n_n-16:n_end+n_n-16)) log_R_P(i-4+n_n)],'r-', LineWidth=1.5);
+                ho(i)=polarplot(theta_P(127+3-(i+n_n)),log_R_P(127+3-(i+n_n)),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+                hl(i)=polarplot([theta_P(127+3-(i+n_n)) theta_P(127+3-(i+n_n))],[min(log_R_P(n_start+n_n-16:n_end+n_n-16)) log_R_P(127+3-(i+n_n))],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
         else
             set(gca,'thetaticklabel', note_label(n_n-3:8+n_n));
             if n_start < n_end
-                n_n = n_n -16;
-                rlim([min(log_R_P(n_start+n_n:n_end+n_n)) max(log_R_P(n_start+n_n:n_end+n_n))]);
-                n_n = n_n +16;
+                rlim([min(log_R_P(n_start+n_n-16:n_end+n_n-16)) max(log_R_P(n_start+n_n-16:n_end+n_n-16))]);
             end
-            s.XData = theta_P(n_start+n_n-16:n_end+n_n-16);
-            s.YData = log_R_P(n_start+n_n-16:n_end+n_n-16);
+            s.XData = l_theta_P(P*n_start+n_n-16:P*n_end+n_n-16);
+            s.YData = l_log_R_P(P*n_start+n_n-16:P*n_end+n_n-16);
             for i=1:N
                 ho(i)=polarplot(theta_P(i-4+n_n),log_R_P(i-4+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
                 hl(i)=polarplot([theta_P(i-4+n_n) theta_P(i-4+n_n)],[min(log_R_P(n_start+n_n-16:n_end+n_n-16)) log_R_P(i-4+n_n)],'r-', LineWidth=1.5);
