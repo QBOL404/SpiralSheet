@@ -10,7 +10,7 @@ end
 
 gui_fig = uifigure("Name", "Control Panel");
 
-update = uibutton(gui_fig, "state", "Text", "Update", "Position", [340 10 100 50], "FontSize", 20, "FontColor", 'r');
+update = uibutton(gui_fig, "state", "Text", "Update", "Position", [340 10 100 50], "FontSize", 20, "FontColor", 'r', "Tooltip", "Update changed settings");
 
 north_group = uibuttongroup(gui_fig, "Title", "Control Pitch", "Position", [10 180 120 70], "FontSize", 18);
 north_note = uidropdown(north_group, "FontSize", 15,"Tooltip","text");
