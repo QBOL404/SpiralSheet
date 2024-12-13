@@ -4,12 +4,17 @@ close all force
 clf;
 
 % GUI part
-%{
-function openLink(~, ~)
+
+function openhome(~, ~)
     url = 'https://sites.google.com/view/qbolab';
     web(url, '-browser');
 end
-%}
+
+function opengithub(~, ~)
+    url = 'https://github.com/QBOL404/SpiralSheet';
+    web(url, '-browser');
+end
+
 gui_fig = uifigure("Name", "Control Panel", "Position", [1500, 600, 560, 400]);
 
 update = uibutton(gui_fig, "state", "Text", "Apply", "Position", [450 10 100 50], "FontSize", 20, "FontColor", 'r');
@@ -38,7 +43,8 @@ scale_gui.Tooltip = "Change the scale of the notes.";
 scale_b1 = uiradiobutton(scale_gui,"Text","Linear","Position",[10 20 130 30], "FontSize", 18);
 scale_b2 = uiradiobutton(scale_gui,"Text","Log","Position",[10 60 130 30], "FontSize", 18);
 
-%homepage = uicontrol(gui_fig, "Tooltip", "L",  "Position", [500, 10, 20, 20], 'Callback', @openLink);
+homepage = uicontrol(gui_fig, 'String', "Homepage", "Tooltip", "L",  "Position", [450, 150, 100, 30], 'Callback', @openhome);
+github = uicontrol(gui_fig, 'String', "Github", "Tooltip", "L",  "Position", [450, 190, 100, 30], 'Callback', @opengithub);
 % GUI part
 
 
@@ -98,6 +104,7 @@ min_R = min(log_R_P); % 계산 속도를 위해 수정
 
 rlim([min(log_R_P(n_start:end)) max(log_R_P(n_start:end))]);
 set(gca,'thetaticklabel', note_label(1:12));
+set(gca, 'Fontsize', 25)
 set(gca,'rticklabel',[]);
 set(gcf,'position',[300,150,800,800]);
 set(gcf, "Name", "Spiral Sheet")
@@ -105,7 +112,7 @@ hold on
 
 % 배경 라인 객체 생성.
 for i=1:length(l_theta_P)-1
-    s(i) = polarplot(l_theta_P(i:i+1), l_log_R_P(i:i+1), 'Color', [line_color(i), 0,1 - line_color(i)]);
+    s(i) = polarplot(l_theta_P(i:i+1), l_log_R_P(i:i+1), 'Color', [line_color(i), 0,1 - line_color(i)], 'LineWidth', 2);
     s(i).Visible = 'on';
 end
 
@@ -163,10 +170,10 @@ while 1
         if direction_b2.Value == 1
             set(gca,'thetaticklabel', flip(note_label(n_n-8:3+n_n)));
             if n_start < n_end
-                rlim([min(plot_log(:)) max(plot_log(:))]);
+                rlim([min(plot_log(l_log_R_P(:))) max(plot_log(:))]);
             end
             for i=1:length(plot_log)-1
-                s(i) = polarplot(plot_theta(i:i+1), plot_log(i:i+1), 'Color', [1 - line_color(i), 0, line_color(i)]);
+                s(i) = polarplot(plot_theta(i:i+1), plot_log(i:i+1), 'Color', [1 - line_color(i), 0, line_color(i)], 'LineWidth', 2);
                 s(i).Visible = 'on';
             end
             for i=1:N
@@ -178,10 +185,10 @@ while 1
         else
             set(gca,'thetaticklabel', note_label(n_n-3:8+n_n));
             if n_start < n_end
-                rlim([min(plot_log(:)) max(plot_log(:))]);
+                rlim([min(l_log_R_P(:)) max(plot_log(:))]);
             end
             for i=1:length(plot_log)-1
-                s(i) = polarplot(plot_theta(i:i+1), plot_log(i:i+1), 'Color', [line_color(i), 0,1 - line_color(i)]);
+                s(i) = polarplot(plot_theta(i:i+1), plot_log(i:i+1), 'Color', [line_color(i), 0,1 - line_color(i)], 'LineWidth', 2);
                 s(i).Visible = 'on';
             end
             for i=1:N
@@ -197,8 +204,8 @@ while 1
     
     % GUI part
 
-    %msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
-    msgArray = [];
+    msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
+    %msgArray = [];
     % Print midi
     if length(msgArray)>0
         msgArray
