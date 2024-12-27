@@ -204,8 +204,8 @@ while 1
     
     % GUI part
 
-    %msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
-    msgArray = [];
+    msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
+
     % Print midi
     if length(msgArray)>0
         msgArray
