@@ -170,15 +170,15 @@ while 1
         if direction_b2.Value == 1
             set(gca,'thetaticklabel', flip(note_label(n_n-8:3+n_n)));
             if n_start < n_end
-                rlim([min(plot_log(l_log_R_P(:))) max(plot_log(:))]);
+                rlim([min(l_log_R_P(:)) max(plot_log(:))]);
             end
             for i=1:length(plot_log)-1
                 s(i) = polarplot(plot_theta(i:i+1), plot_log(i:i+1), 'Color', [1 - line_color(i), 0, line_color(i)], 'LineWidth', 2);
                 s(i).Visible = 'on';
             end
             for i=1:N
-                ho(i)=polarplot(theta_P(127+3-(i+n_n)),log_R_P(127+3-(i+n_n)),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
-                hl(i)=polarplot([theta_P(127+3-(i+n_n)) theta_P(127+3-(i+n_n))],[min(log_R_P(n_start+n_n-16:n_end+n_n-16)) log_R_P(127+3-(i+n_n))],'r-', LineWidth=1.5);
+                ho(i)=polarplot(theta_P(i-4+n_n),log_R_P(96-1-i+n_n),'ro','MarkerFaceColor',[1 .6 .6],'MarkerSize',10);
+                hl(i)=polarplot([theta_P(i-4+n_n) theta_P(i-4+n_n)],[min(log_R_P(:)) log_R_P(96-1-i+n_n)],'r-', LineWidth=1.5);
                 ho(i).Visible = 'off';
                 hl(i).Visible = 'off';
             end
@@ -204,8 +204,8 @@ while 1
     
     % GUI part
 
-    msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
-    %msgArray = [];
+    %msgArray = midireceive(device); % midi device에서 midi signal을 받아옴.
+    msgArray = [];
     % Print midi
     if length(msgArray)>0
         msgArray
